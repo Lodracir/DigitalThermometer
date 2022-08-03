@@ -1,4 +1,4 @@
-/* GPIO Header Driver */
+/** GPIO Header Driver **/
 #include "MCU_Drivers/DRV_GPIO.h"
 
 /****************************************************************
@@ -10,14 +10,14 @@
 void DRV_GPIO_Init(void)
 {
 
-    // GPIO Init Structure
+    /** GPIO Init Structure **/
     GPIO_InitTypeDef hgpio;
 
-    // GPIO Clock Inits
+    /** GPIO Clock Inits **/
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    // Configure PB3 as Output
+    /** Configure PB3 as Output **/
     hgpio.Pin   = GPIO_PIN_3;
     hgpio.Mode  = GPIO_MODE_OUTPUT_PP;
     hgpio.Pull  = GPIO_NOPULL;
@@ -26,7 +26,7 @@ void DRV_GPIO_Init(void)
 
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
 
-    // Configure PA4 as Output
+    /** Configure PA4 as Output **/
     hgpio.Pin   = GPIO_PIN_4;
     hgpio.Mode  = GPIO_MODE_OUTPUT_PP;
     hgpio.Pull  = GPIO_NOPULL;
@@ -51,13 +51,13 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
     if( huart->Instance == USART2 )
     {
 
-        // GPIO Init Structure
+        /** GPIO Init Structure **/
         GPIO_InitTypeDef hgpio_uart2;
 
-        // UART2 Clock Init
+        /** UART2 Clock Init **/
         __HAL_RCC_USART2_CLK_ENABLE();
 
-        // PA2 and PA15 GPIO Configuration
+        /** PA2 and PA15 GPIO Configuration **/
         hgpio_uart2.Pin         = GPIO_PIN_2 | GPIO_PIN_15;
         hgpio_uart2.Mode        = GPIO_MODE_AF_PP;
         hgpio_uart2.Pull        = GPIO_NOPULL;
@@ -72,11 +72,14 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
 {
 
-    // Disable UART2 Clock
-    __HAL_RCC_USART1_CLK_DISABLE();
+    if( huart->Instance == USART2 )
+    {
+        /** Disable UART2 Clock **/
+        __HAL_RCC_USART1_CLK_DISABLE();
 
-    // GPIO DeInit
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2 | GPIO_PIN_15);
+        /** GPIO DeInit **/
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2 | GPIO_PIN_15);
+    }
 
 }
 
@@ -88,13 +91,13 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     if( hi2c->Instance == I2C1 )
     {
 
-        // GPIO Init Structure
+        /** GPIO Init Structure **/
         GPIO_InitTypeDef hgpio_i2c1;
 
-        // Enable I2C1 Clock
+        /** Enable I2C1 Clock **/
         __HAL_RCC_I2C1_CLK_ENABLE();
 
-        // PB6 and PB7 Configuration
+        /** PB6 and PB7 Configuration **/
         hgpio_i2c1.Pin          = GPIO_PIN_6 | GPIO_PIN_7;
         hgpio_i2c1.Mode         = GPIO_MODE_AF_OD;
         hgpio_i2c1.Pull         = GPIO_PULLUP;
@@ -109,10 +112,47 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
 {
 
-    // Disable I2C1 Clock
-    __HAL_RCC_I2C1_CLK_DISABLE();
+    if(hi2c->Instance == I2C1)
+    {
+        /** Disable I2C1 Clock **/
+        __HAL_RCC_I2C1_CLK_DISABLE();
 
-    // GPIO DeInit
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6 | GPIO_PIN_7);
+        /** GPIO DeInit **/
+        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6 | GPIO_PIN_7);
+    }
+
+}
+
+/********************** SPI1 Msp Functions *********************/
+
+void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
+{
+
+    if( hspi->Instance  == SPI1 )
+    {
+
+        /** GPIO Init Structure **/
+        GPIO_InitTypeDef hgpio_spi1;
+
+        /** Enable SPI1 Clock **/
+        __HAL_RCC_SPI1_CLK_ENABLE();
+
+    }
+
+}
+
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
+{
+
+    if( hspi->Instance == SPI1 )
+    {
+
+        /** Disable SPI1 Clock **/
+        __HAL_RCC_I2C1_CLK_DISABLE();
+
+        /** Disable GPIO Pins related to SPI1 **/
+
+
+    }
 
 }
