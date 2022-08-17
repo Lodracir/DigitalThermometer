@@ -18,4 +18,5 @@ void MCU_DRV_Init(void)
     DRV_GPIO_Init();
     DRV_UART2_Init();
     DRV_I2C1_Init();
+    DRV_TIM2_Init();
 }

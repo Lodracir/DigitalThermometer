@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* Defines and Macros */
 #define BSP_LD3_Pin     GPIO_PIN_3

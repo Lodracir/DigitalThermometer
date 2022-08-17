@@ -132,7 +132,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
     {
 
         /** GPIO Init Structure **/
-        GPIO_InitTypeDef hgpio_spi1;
+        //GPIO_InitTypeDef hgpio_spi1;
 
         /** Enable SPI1 Clock **/
         __HAL_RCC_SPI1_CLK_ENABLE();

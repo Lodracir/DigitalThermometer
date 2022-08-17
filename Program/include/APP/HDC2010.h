@@ -76,5 +76,7 @@ typedef struct
 void HDC2010_Init(HDC2010_t *hsensor);
 void HDC2010_DeInit(HDC2010_t *hsensor);
 
+void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev);
+void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var);
 
 #endif //PROGRAM_HDC2010_H

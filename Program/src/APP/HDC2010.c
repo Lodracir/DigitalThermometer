@@ -10,8 +10,7 @@ const float hum_value = 100.00000f / 65536.00000f;
  **/
 static void HDC2010_Write(I2C_HandleTypeDef *hi2c ,uint8_t reg, uint8_t data);
 static uint8_t HDC2010_Read(I2C_HandleTypeDef *hi2c, uint8_t reg);
-static void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev);
-static void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var);
+
 
 /****************************************************************
  *                                                              *
@@ -46,6 +45,67 @@ void HDC2010_DeInit(HDC2010_t *hsensor)
     /** Desallocate Functions **/
     hsensor->readInfo           = NULL;
     hsensor->pollMeasurement    = NULL;
+
+}
+
+/**
+ * @Name;
+ * @brief:
+ * @values:
+ * @return:
+ **/
+void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev)
+{
+
+    /** Local Variables **/
+    uint8_t ManufacturerID[2] = { 0x00 ,0x00 }, DeviceID[2] = { 0x00 ,0x00 };
+
+    /** Read High and Low Manufacturer ID **/
+    ManufacturerID[0] = HDC2010_Read(hi2c, HDC2010_MNFRID_HIGH);
+    ManufacturerID[1] = HDC2010_Read(hi2c, HDC2010_MNFRID_LOW);
+
+    /** Read High and Low Device ID **/
+    DeviceID[0] = HDC2010_Read(hi2c, HDC2010_DEVID_HIGH);
+    DeviceID[1] = HDC2010_Read(hi2c, HDC2010_DEVID_LOW);
+
+    /** Merge 8-bit buffers to a single 16-bit variable and store them **/
+    dev->Manufacturer = (ManufacturerID[0] << 8) + ManufacturerID[1];
+    dev->Device = (DeviceID[0] << 8) + DeviceID[1];
+
+}
+
+/**
+ * @Name;
+ * @brief:
+ * @values:
+ * @return:
+ **/
+void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var)
+{
+
+    /** Local Variables **/
+    uint8_t TempBuff[2] = { 0x00, 0x00 }, HumBuff[2] = { 0x00, 0x00 };
+
+    /** Trigger conversion **/
+    HDC2010_Write(hi2c, HDC2010_MEASURE_CONF, HDC2010_MEASURE_START);
+
+    /** Delay 10 mS **/
+    HAL_Delay(10);
+
+    /** Read Sensor buffer to get Temperature and Humidity Values **/
+    TempBuff[0] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_HIGH);
+    TempBuff[1] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_LOW);
+
+    HumBuff[0] = HDC2010_Read(hi2c, HDC2010_HUMREAD_HIGH);
+    HumBuff[1] = HDC2010_Read(hi2c, HDC2010_HUMREAD_LOW);
+
+    /** Merge Temperature and Humidity Values **/
+    var->Temp.bits  = (TempBuff[0] << 8) + (TempBuff[1]);
+    var->Hum.bits   = (HumBuff[0] << 8) + (HumBuff[1]);
+
+    /** Convert bits to float values (Temp and Hum) **/
+    var->Temp.value =   ( ( (float)var->Temp.bits ) * (temp_value) ) - 40.0f;
+    var->Hum.value  =   (float)var->Hum.bits * hum_value;
 
 }
 
@@ -94,63 +154,3 @@ uint8_t HDC2010_Read(I2C_HandleTypeDef *hi2c, uint8_t reg)
     return DataValue;
 }
 
-/**
- * @Name;
- * @brief:
- * @values:
- * @return:
- **/
-static void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev)
-{
-
-    /** Local Variables **/
-    uint8_t ManufacturerID[2] = { 0x00 ,0x00 }, DeviceID[2] = { 0x00 ,0x00 };
-
-    /** Read High and Low Manufacturer ID **/
-    ManufacturerID[0] = HDC2010_Read(hi2c, HDC2010_MNFRID_HIGH);
-    ManufacturerID[1] = HDC2010_Read(hi2c, HDC2010_MNFRID_LOW);
-
-    /** Read High and Low Device ID **/
-    DeviceID[0] = HDC2010_Read(hi2c, HDC2010_DEVID_HIGH);
-    DeviceID[1] = HDC2010_Read(hi2c, HDC2010_DEVID_LOW);
-
-    /** Merge 8-bit buffers to a single 16-bit variable and store them **/
-    dev->Manufacturer = (ManufacturerID[0] << 8) + ManufacturerID[1];
-    dev->Device = (DeviceID[0] << 8) + DeviceID[1];
-
-}
-
-/**
- * @Name;
- * @brief:
- * @values:
- * @return:
- **/
-static void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var)
-{
-
-    /** Local Variables **/
-    uint8_t TempBuff[2] = { 0x00, 0x00 }, HumBuff[2] = { 0x00, 0x00 };
-
-    /** Trigger conversion **/
-    HDC2010_Write(hi2c, HDC2010_MEASURE_CONF, HDC2010_MEASURE_START);
-
-    /** Delay 10 mS **/
-    HAL_Delay(10);
-
-    /** Read Sensor buffer to get Temperature and Humidity Values **/
-    TempBuff[0] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_HIGH);
-    TempBuff[1] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_LOW);
-
-    HumBuff[0] = HDC2010_Read(hi2c, HDC2010_HUMREAD_HIGH);
-    HumBuff[1] = HDC2010_Read(hi2c, HDC2010_HUMREAD_LOW);
-
-    /** Merge Temperature and Humidity Values **/
-    var->Temp.bits  = (TempBuff[0] << 8) + (TempBuff[1]);
-    var->Hum.bits   = (HumBuff[0] << 8) + (HumBuff[1]);
-
-    /** Convert bits to float values (Temp and Hum) **/
-    var->Temp.value =   ( ( (float)var->Temp.bits ) * (temp_value) ) - 40.0f;
-    var->Hum.value  =   (float)var->Hum.bits * hum_value;
-
-}

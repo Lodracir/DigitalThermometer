@@ -4,9 +4,13 @@
 
 /* MCU Peripherals Objects */
 extern I2C_HandleTypeDef hi2c1;
+extern TIM_HandleTypeDef htim2;
 
 /* App Objects */
 HDC2010_t HDC2010;
+
+/** Extern Variables **/
+extern bool MeasureFLAG;
 
 /* Global Variables */
 const char welcomeTxt[10] = "Welcome!\r\n";
@@ -20,16 +24,16 @@ int main()
     HDC2010_DeviceInfo_t  SensorInfo;
     HDC2010_Values_t      SensorValues;
 
-    /**/
+    /** **/
     memset(devID, 0, sizeof(devID));
     memset(devID, 0, sizeof(devMnfr));
     memset(devID, 0, sizeof(TempTXT));
     memset(devID, 0, sizeof(HumTXT));
 
-    /* Init HAL Driver */
+    /** Init HAL Driver **/
     HAL_Init();
 
-    /* Init MCU Peripherals */
+    /** Init MCU Peripherals */
     MCU_DRV_Init();
 
     /* Set PB3 Low */
@@ -55,26 +59,31 @@ int main()
 
     /****** ***** ***** ***** ***** ***** ***** ***** ***** ***** ******/
 
+    HAL_TIM_Base_Start_IT(&htim2);
+
     while(1)
     {
 
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
+        if(MeasureFLAG == true)
+        {
 
-        /* Request Measurement */
-        HDC2010.pollMeasurement(&hi2c1, &SensorValues);
+            /* Request Measurement */
+            HDC2010.pollMeasurement(&hi2c1, &SensorValues);
 
-        tempValue = (uint16_t)SensorValues.Temp.value;
-        humValue  = (uint16_t)SensorValues.Hum.value;
+            tempValue = (uint16_t)SensorValues.Temp.value;
+            humValue  = (uint16_t)SensorValues.Hum.value;
 
-        sprintf(TempTXT, "Temp: %i\r\n", tempValue);
-        sprintf(HumTXT, "HUM: %i\r\n", humValue);
+            sprintf(TempTXT, "Temp: %i\r\n", tempValue);
+            sprintf(HumTXT, "HUM: %i\r\n", humValue);
 
-        Serial.Transmit((uint8_t *)TempTXT, sizeof(TempTXT));
-        Serial.Transmit((uint8_t *)HumTXT, sizeof(HumTXT));
+            Serial.Transmit((uint8_t *)TempTXT, sizeof(TempTXT));
+            Serial.Transmit((uint8_t *)HumTXT, sizeof(HumTXT));
 
-        memset(devID, 0, sizeof(TempTXT)); memset(devID, 0, sizeof(HumTXT));
+            memset(devID, 0, sizeof(TempTXT)); memset(devID, 0, sizeof(HumTXT));
 
-        HAL_Delay(1000);
+            MeasureFLAG = false;
+
+        }
 
     }
 
