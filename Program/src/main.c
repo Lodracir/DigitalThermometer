@@ -3,6 +3,10 @@
 #include "APP/HDC2010.h"
 #include "APP/eeprom.h"
 
+/** DEFINES **/
+#define DevMnfr_MemAddr 0x10    
+#define DevID_MemAddr   0x12
+
 /* MCU Peripherals Objects */
 extern I2C_HandleTypeDef hi2c1;
 
@@ -53,11 +57,11 @@ int main()
 
     /**************** Print Device Info through UART ****************/
 
-    //sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
-    //sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
+    sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
+    sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
 
-    //Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
-    //Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
+    Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
+    Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
 
     /****************************************************************/
 
@@ -70,6 +74,8 @@ int main()
 
     /****************************************************************/
 
+    HAL_Delay(1000);
+
     /********************* Write Info to EEPROM *********************/
 
     Memory.write.D8BIT(&hi2c1, MEM_BLOCK_0, 0x48, 0x3C);
@@ -80,6 +86,31 @@ int main()
 
     sprintf(msg, "Data: 0x%02X\r\n", data);
     Serial.Transmit( (uint8_t *)msg, sizeof(msg) );
+
+    /****************************************************************/
+
+    HAL_Delay(1000);
+
+    /***************** Store Sensor info to EEPROM ******************/
+
+    // Write Sensor info to EEPROM
+    Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevMnfr_MemAddr, SensorInfo.Manufacturer);
+    Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevID_MemAddr, SensorInfo.Device);
+
+    // Clear Device Information
+    SensorInfo.Manufacturer = 0;
+    SensorInfo.Device       = 0;
+
+    // Read Sensor info through EEPROM
+    Memory.read.D16BIT(&hi2c1, MEM_BLOCK_0, DevMnfr_MemAddr, &SensorInfo.Manufacturer);
+    Memory.read.D16BIT(&hi2c1, MEM_BLOCK_0, DevID_MemAddr, &SensorInfo.Device);
+
+    // Print Device Info through UART
+    sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
+    sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
+
+    Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
+    Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
 
     /****************************************************************/
 
