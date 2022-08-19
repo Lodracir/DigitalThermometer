@@ -108,11 +108,7 @@ void EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
 {
 
     /** Local Variables **/
-    uint8_t TransmitBuffer[2] = { 0x00, 0x00 };
-
-    /** Assign data to buffer **/
-    TransmitBuffer[1] = addr;
-    TransmitBuffer[2] = data;
+    //uint8_t TransmitBuffer = data;
 
     /** Set Memory Address according with selected memory block **/
     switch(AddrBlock)
@@ -125,8 +121,8 @@ void EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
             MemAddr = ( 0x51 << 1);
     }
 
-    /** **/
-    HAL_I2C_Master_Transmit(hi2c, (uint16_t)MemAddr, TransmitBuffer, sizeof(TransmitBuffer), 100 );
+    /** Write data to a specified address **/
+    HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &data, 1, 100);
 
 }
 
@@ -293,8 +289,7 @@ void EEPROM_READ_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_
     }
 
     /** Read Data from EEPROM **/
-    HAL_I2C_Master_Transmit(hi2c, (uint16_t)MemAddr, &addr, 1, 100);
-    HAL_I2C_Master_Receive(hi2c, (uint16_t)MemAddr, data, 1, 100);
+    HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, data, 1, 100);
 
 }
 
