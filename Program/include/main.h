@@ -23,6 +23,9 @@
 #include "MCU_Drivers/DRV_MCU.h"
 
 /* App Drivers Include */
+#include "APP/value.h"
+#include "APP/Memory_Map_EEPROM.h"
 #include "APP/HDC2010.h"
+
 
 #endif //PROGRAM_MAIN_H

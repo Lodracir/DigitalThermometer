@@ -69,6 +69,8 @@ typedef struct
 {
     void    (*readInfo)(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev);
     void    (*pollMeasurement)(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var);
+    void    (*getTemperature)(void);
+    void    (*getHumidity)(void);
 
 }HDC2010_t;
 

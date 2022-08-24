@@ -4,39 +4,38 @@
 #include "APP/eeprom.h"
 
 /** DEFINES **/
-#define DevMnfr_MemAddr 0x10    
-#define DevID_MemAddr   0x12
 
-/* MCU Peripherals Objects */
+
+/*- MCU Peripherals Objects -*/
 extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim2;
 
-/* App Objects */
+/*- App Objects -*/
 HDC2010_t   HDC2010;
 EEPROM_t    Memory;
 
 /** Extern Variables **/
 extern bool MeasureFLAG;
 
-/* Global Variables */
+/** Global Variables **/
 const char welcomeTxt[10] = "Welcome!\r\n";
-uint8_t MemoryAddr = (0x50 << 1);
-uint8_t TransmitBuff[2];
+
 
 int main()
 {
 
     /* Local Variables */
     char devID[20], devMnfr[20], TempTXT[15], HumTXT[15];
+    Value_t Temperature, Humidity;
     uint16_t tempValue = 0, humValue = 0;
     HDC2010_DeviceInfo_t  SensorInfo;
-    HDC2010_Values_t      SensorValues;
+    HDC2010_Values_t SensorValues;
  
     /** **/
-    memset(devID, 0, sizeof(devID));
-    memset(devID, 0, sizeof(devMnfr));
-    memset(devID, 0, sizeof(TempTXT));
-    memset(devID, 0, sizeof(HumTXT));
+    memset(devID, ' ', sizeof(devID));
+    memset(devID, ' ', sizeof(devMnfr));
+    memset(devID, ' ', sizeof(TempTXT));
+    memset(devID, ' ', sizeof(HumTXT));
 
     /** Init HAL Driver **/
     HAL_Init();
@@ -55,7 +54,7 @@ int main()
     /* Transmit Initial Message */
     Serial.Transmit((uint8_t *)welcomeTxt, sizeof(welcomeTxt));
 
-    /* Get Information */
+    /** Get Information **/
     HDC2010.readInfo(&hi2c1, &SensorInfo);
 
     /**************** Print Device Info through UART ****************/
@@ -86,14 +85,15 @@ int main()
         {
 
             /* Request Measurement */
-            HDC2010.pollMeasurement(&hi2c1, &SensorValues);
+            HDC2010.pollMeasurement(&hi2c1, &SensorValues); // .pollMeasurement(&hi2c1)
+                                                            // .getTemperature(&hi2c1, &Temperature.value)
+                                                            // .getHumidity(&hi2c1, &Humidity.value)
 
-            tempValue = (uint16_t)SensorValues.Temp.value;
-            humValue  = (uint16_t)SensorValues.Hum.value;
+            Temperature.value = SensorValues.Temp.value;
+            Humidity.value  = SensorValues.Hum.value;
 
-                HAL_Delay(1000);
-            sprintf(TempTXT, "Temp: %i\r\n", tempValue);
-            sprintf(HumTXT, "HUM: %i\r\n", humValue);
+            sprintf(TempTXT, "Temp: %i\r\n", (int)Temperature.value);
+            sprintf(HumTXT, "HUM: %i\r\n", (int)Humidity.value);
 
         }
 
