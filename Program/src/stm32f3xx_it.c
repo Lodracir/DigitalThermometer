@@ -15,9 +15,7 @@ extern TIM_HandleTypeDef htim2;
 
 void SysTick_Handler(void)
 {
-
    HAL_IncTick();
-
 }
 
 /****************************************************************

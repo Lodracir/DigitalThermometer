@@ -50,7 +50,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     count++;
 
-    if(count == 60)
+    if( (count == 60) )
     {
         MeasureFLAG = true;
         count = 0;

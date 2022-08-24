@@ -43,40 +43,35 @@ int main()
     /** Init MCU Peripherals */
     MCU_DRV_Init();
 
-    /* Set PB3 Low */
-    //BSP_LD3_WritePin(GPIO_PIN_SET);
+    /** Set PB3 Low **/
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
 
-    /* Init App Drivers */
+    /** Init App Drivers **/
     HDC2010_Init(&HDC2010);
     EEPROM_Init(&Memory);
 
-    /* Transmit Initial Message */
+    /** Transmit Initial Message **/
     Serial.Transmit((uint8_t *)welcomeTxt, sizeof(welcomeTxt));
 
     /** Get Information **/
     HDC2010.readInfo(&hi2c1, &SensorInfo);
 
     /**************** Print Device Info through UART ****************/
-
     sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
     sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
 
     Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
     Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
-
     /****************************************************************/
 
     /***************** Store Sensor info to EEPROM  *****************/
-    
-    // Write Sensor info to EEPROM
     Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevMnfr_MemAddr, SensorInfo.Manufacturer);
     Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevID_MemAddr, SensorInfo.Device);
-
     /****************************************************************/
 
-    /** Init TIM2 **/
+    /*************************** Init TIM2 **************************/
     HAL_TIM_Base_Start_IT(&htim2);
+    /****************************************************************/
 
     while(1)
     {
@@ -94,6 +89,11 @@ int main()
 
             sprintf(TempTXT, "Temp: %i\r\n", (int)Temperature.value);
             sprintf(HumTXT, "HUM: %i\r\n", (int)Humidity.value);
+
+            Serial.Transmit((uint8_t *)TempTXT, sizeof(TempTXT));
+            Serial.Transmit((uint8_t *)HumTXT, sizeof(HumTXT));
+
+            MeasureFLAG = false;
 
         }
 
