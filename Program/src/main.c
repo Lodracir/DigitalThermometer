@@ -1,41 +1,45 @@
-/* Include Main Header */
+/** Include Main Header **/
 #include "main.h"
-#include "APP/HDC2010.h"
-#include "APP/eeprom.h"
-
-/** DEFINES **/
 
 
-/*- MCU Peripherals Objects -*/
+/** MCU Peripherals Objects **/
 extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim2;
 
-/*- App Objects -*/
+/** App UML Declaration **/
+volatile APP_UML_t APPStateMachine = STATE_DEFAULT;
+
+/** App Objects **/
 HDC2010_t   HDC2010;
 EEPROM_t    Memory;
 
 /** Extern Variables **/
-extern bool MeasureFLAG;
+extern volatile bool MeasureFLAG;
 
 /** Global Variables **/
 const char welcomeTxt[10] = "Welcome!\r\n";
+float TempBuff[5], HumBuff[5];
+uint16_t TempBuffBits[5], HumBuffBits[5];
+char devID[20], devMnfr[20], TempTXT[11], HumTXT[10];
+Value_t Temperature, Humidity;
+HDC2010_DeviceInfo_t  SensorInfo;
 
+/** Prototype Functions **/
+void APP_START_MEASUREMENT(void);
+void APP_STORE_DATA_TO_BUFFER(void);
+void APP_STORE_DATA_TO_EEPROM(void);
+void APP_DEFAULT(void);
 
 int main()
 {
+    /** Local Variables **/
 
-    /* Local Variables */
-    char devID[20], devMnfr[20], TempTXT[15], HumTXT[15];
-    Value_t Temperature, Humidity;
-    uint16_t tempValue = 0, humValue = 0;
-    HDC2010_DeviceInfo_t  SensorInfo;
-    HDC2010_Values_t SensorValues;
  
-    /** **/
+    /** Clear all String **/
     memset(devID, ' ', sizeof(devID));
-    memset(devID, ' ', sizeof(devMnfr));
-    memset(devID, ' ', sizeof(TempTXT));
-    memset(devID, ' ', sizeof(HumTXT));
+    memset(devMnfr, ' ', sizeof(devMnfr));
+    memset(TempTXT, ' ', sizeof(TempTXT));
+    memset(HumTXT, ' ', sizeof(HumTXT));
 
     /** Init HAL Driver **/
     HAL_Init();
@@ -44,7 +48,7 @@ int main()
     MCU_DRV_Init();
 
     /** Set PB3 Low **/
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
 
     /** Init App Drivers **/
     HDC2010_Init(&HDC2010);
@@ -65,8 +69,8 @@ int main()
     /****************************************************************/
 
     /***************** Store Sensor info to EEPROM  *****************/
-    Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevMnfr_MemAddr, SensorInfo.Manufacturer);
-    Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevID_MemAddr, SensorInfo.Device);
+    //Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevMnfr_MemAddr, SensorInfo.Manufacturer);
+    //Memory.write.D16BIT(&hi2c1, MEM_BLOCK_0, DevID_MemAddr, SensorInfo.Device);
     /****************************************************************/
 
     /*************************** Init TIM2 **************************/
@@ -76,29 +80,33 @@ int main()
     while(1)
     {
 
-        if(MeasureFLAG == true)
+        switch(APPStateMachine)
         {
+            case START_MEASUREMENT:
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
+                APP_START_MEASUREMENT();
+                APPStateMachine = STATE_DEFAULT;
+                break;
 
-            /* Request Measurement */
-            HDC2010.pollMeasurement(&hi2c1, &SensorValues); // .pollMeasurement(&hi2c1)
-                                                            // .getTemperature(&hi2c1, &Temperature.value)
-                                                            // .getHumidity(&hi2c1, &Humidity.value)
-
-            Temperature.value = SensorValues.Temp.value;
-            Humidity.value  = SensorValues.Hum.value;
-
-            sprintf(TempTXT, "Temp: %i\r\n", (int)Temperature.value);
-            sprintf(HumTXT, "HUM: %i\r\n", (int)Humidity.value);
-
-            Serial.Transmit((uint8_t *)TempTXT, sizeof(TempTXT));
-            Serial.Transmit((uint8_t *)HumTXT, sizeof(HumTXT));
-
-            MeasureFLAG = false;
-
+            case STATE_DEFAULT:
+                APP_DEFAULT();
+                break;
         }
 
     }
 
 }
 
+void APP_START_MEASUREMENT(void)
+{
+    /** Request Measurement **/
+    HDC2010.pollMeasurement(&hi2c1);
+    HDC2010.getTemperature(&hi2c1, &Temperature.value);
+    HDC2010.getHumidity(&hi2c1, &Humidity.value);
 
+}
+
+void APP_DEFAULT(void)
+{
+    // Do something.....
+}

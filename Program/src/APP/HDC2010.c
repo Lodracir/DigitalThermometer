@@ -11,6 +11,13 @@ const float hum_value = 100.00000f / 65536.00000f;
 static void HDC2010_Write(I2C_HandleTypeDef *hi2c ,uint8_t reg, uint8_t data);
 static uint8_t HDC2010_Read(I2C_HandleTypeDef *hi2c, uint8_t reg);
 
+/**
+ * Functions
+ **/
+static void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev);
+static void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c);
+static uint16_t HDC2010_getTemperature(I2C_HandleTypeDef *hi2c, float *value);
+static uint16_t HDC2010_getHumidity(I2C_HandleTypeDef *hi2c, float *value);
 
 /****************************************************************
  *                                                              *
@@ -30,6 +37,8 @@ void HDC2010_Init(HDC2010_t *hsensor)
     /** Allocate Functions **/
     hsensor->readInfo           = HDC2010_ReadInfo;
     hsensor->pollMeasurement    = HDC2010_PollMeasurement;
+    hsensor->getTemperature     = HDC2010_getTemperature;
+    hsensor->getHumidity        = HDC2010_getHumidity;
 
 }
 
@@ -45,6 +54,8 @@ void HDC2010_DeInit(HDC2010_t *hsensor)
     /** Desallocate Functions **/
     hsensor->readInfo           = NULL;
     hsensor->pollMeasurement    = NULL;
+    hsensor->getTemperature     = NULL;
+    hsensor->getHumidity        = NULL;
 
 }
 
@@ -80,32 +91,67 @@ void HDC2010_ReadInfo(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev)
  * @values:
  * @return:
  **/
-void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c, HDC2010_Values_t *var)
+void HDC2010_PollMeasurement(I2C_HandleTypeDef *hi2c)
 {
-
-    /** Local Variables **/
-    uint8_t TempBuff[2] = { 0x00, 0x00 }, HumBuff[2] = { 0x00, 0x00 };
 
     /** Trigger conversion **/
     HDC2010_Write(hi2c, HDC2010_MEASURE_CONF, HDC2010_MEASURE_START);
 
-    /** Delay 10 mS **/
-    HAL_Delay(10);
+}
 
-    /** Read Sensor buffer to get Temperature and Humidity Values **/
+/**
+ * @Name;
+ * @brief:
+ * @values:
+ * @return:
+ **/
+static uint16_t HDC2010_getTemperature(I2C_HandleTypeDef *hi2c, float *value)
+{
+
+    /** Local Variables **/
+    uint8_t TempBuff[2] = { 0x00, 0x00 };
+    uint16_t TempBits = 0;
+
+    /** Read Sensor buffer to get Humidity Values **/
     TempBuff[0] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_HIGH);
     TempBuff[1] = HDC2010_Read(hi2c, HDC2010_TEMPREAD_LOW);
 
+    /** Merge Temperature bits value **/
+    TempBits = (TempBuff[0] << 8) + (TempBuff[1]);
+
+    /** Calculate Temperature value **/
+    (*value) = ( ( (float)TempBits ) * (temp_value) ) - 40.0f;
+
+    /** Return Temperature value bits **/
+    return TempBits;
+
+}
+
+/**
+ * @Name;
+ * @brief:
+ * @values:
+ * @return:
+ **/
+static uint16_t HDC2010_getHumidity(I2C_HandleTypeDef *hi2c, float *value)
+{
+
+    /** Local Variables **/
+    uint8_t HumBuff[2] = { 0x00, 0x00 };
+    uint16_t HumBits = 0;
+
+    /** Read Sensor buffer to get Humidity Values **/
     HumBuff[0] = HDC2010_Read(hi2c, HDC2010_HUMREAD_HIGH);
     HumBuff[1] = HDC2010_Read(hi2c, HDC2010_HUMREAD_LOW);
 
-    /** Merge Temperature and Humidity Values **/
-    var->Temp.bits  = (TempBuff[0] << 8) + (TempBuff[1]);
-    var->Hum.bits   = (HumBuff[0] << 8) + (HumBuff[1]);
+    /** Merge Humidity bits value **/
+    HumBits = (HumBuff[0] << 8) + (HumBuff[1]);
 
-    /** Convert bits to float values (Temp and Hum) **/
-    var->Temp.value =   ( ( (float)var->Temp.bits ) * (temp_value) ) - 40.0f;
-    var->Hum.value  =   (float)var->Hum.bits * hum_value;
+    /** Calculate Humidity Value **/
+    (*value) = (float)HumBits * hum_value;
+
+    /** Return Humidity value bits **/
+    return HumBits;
 
 }
 
