@@ -11,6 +11,10 @@
 extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim2;
 
+// UART2
+Uart_t huart2;
+UartConfig_t huart2_cfg;
+
 /* App Objects */
 HDC2010_t   HDC2010;
 EEPROM_t    Memory;
