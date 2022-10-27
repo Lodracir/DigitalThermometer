@@ -67,10 +67,9 @@ int main()
 
     /** Init App Drivers **/
     APPInit();
-    
 
     /** Transmit Initial Message **/
-    Serial.Transmit((uint8_t *)welcomeTxt, sizeof(welcomeTxt));
+    //Serial.Transmit((uint8_t *)welcomeTxt, sizeof(welcomeTxt));
 
     /** **/
     //APP_CheckStoredSensorInfo_Flag(&Flag.Stored.SensorInfo);
@@ -101,8 +100,8 @@ int main()
     sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
     sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
 
-    Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
-    Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
+    //Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
+    //Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
     /****************************************************************/
 
     /*************************** Init TIM2 **************************/
@@ -148,8 +147,8 @@ void APP_START_MEASUREMENT(void)
     sprintf(TempTXT, "T: %i C\r\n", (int)Temperature.value);
     sprintf(HumTXT, "H: %i RH\r\n", (int)Humidity.value);
 
-    Serial.Transmit( (uint8_t *)TempTXT, sizeof(devMnfr));
-    Serial.Transmit( (uint8_t *)HumTXT, sizeof(devID) );
+    //Serial.Transmit( (uint8_t *)TempTXT, sizeof(devMnfr));
+    //Serial.Transmit( (uint8_t *)HumTXT, sizeof(devID) );
 
 }
 
