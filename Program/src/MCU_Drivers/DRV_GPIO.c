@@ -16,6 +16,7 @@ void DRV_GPIO_Init(void)
     /** GPIO Clock Inits **/
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
 
     /** Configure PB3 as Output **/
     hgpio.Pin   = GPIO_PIN_3;

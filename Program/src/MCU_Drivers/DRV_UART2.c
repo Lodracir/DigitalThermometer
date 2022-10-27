@@ -1,9 +1,11 @@
 /* DRV UART2 Header */
 #include "MCU_Drivers/DRV_UART2.h"
 
+/* Global Variables */
+DRV_Serial_t Serial;
+
 /* UART2 Typedef Structure */
 UART_HandleTypeDef huart2;
-
 /*  Static Prototype Functions */
 static void DRV_UART2_Transmit(uint8_t *pData, uint8_t size);
 static void DRV_UART2_Receive(uint8_t *pData, uint8_t size);

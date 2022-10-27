@@ -1,5 +1,6 @@
 /* EEPROM Driver Header */
 #include "APP/eeprom.h"
+#include "MCU_Drivers/DRV_I2C1.h"
 
 /**
  *  Local Variables
@@ -16,29 +17,29 @@ static uint8_t MemAddr = (0x50 << 1); // 0b 0101 0000 -> 0x50
  *                      Write Functions                         *
  ****************************************************************/
 
-/** Unsigned Data **/
-void    EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t data);
-void    EEPROM_WRITE_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint16_t data);
-void    EEPROM_WRITE_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t data);
-void    EEPROM_WRITE_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint64_t data);
+static void    WRITE_8BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data);
+static void    WRITE_16BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint16_t *data);
+static void    WRITE_32BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t *data);
+static void    WRITE_64BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint64_t *data);
+static void    WRITE_FLOAT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data);
+static void    WRITE_DOUBLE(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data);
 
-/** Float and Double Data **/
-void    EEPROM_WRITE_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float data);
-void    EEPROM_WRITE_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double data);
+/** Write Function **/
+static void EEPROM_WriteData( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType );
 
 /****************************************************************
  *                       Read Functions                         *
  ****************************************************************/
 
-/** Unsigned Data **/
-void    EEPROM_READ_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data);
-void    EEPROM_READ_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint16_t *data);
-void    EEPROM_READ_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint32_t *data);
-void    EEPROM_READ_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint64_t *data);
+void    READ_8BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data);
+void    READ_16BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint16_t *data);
+void    READ_32BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint32_t *data);
+void    READ_64BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint64_t *data);
+void    READ_FLOAT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data);
+void    READ_DOUBLE(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data);
 
-/** Float and Double Data **/
-void    EEPROM_READ_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data);
-void    EEPROM_READ_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data);
+/** Read Function **/
+static void EEPROM_ReadData( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType );
 
 /****************************************************************
  *                                                              *
@@ -49,42 +50,18 @@ void    EEPROM_READ_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBloc
 void EEPROM_Init(EEPROM_t *heeprom)
 {
 
-    /** Allocate Write Functions **/
-    heeprom->write.D8BIT        = EEPROM_WRITE_8BIT;
-    heeprom->write.D16BIT       = EEPROM_WRITE_16BIT;
-    heeprom->write.D32BIT       = EEPROM_WRITE_32BIT;
-    heeprom->write.D64BIT       = EEPROM_WRITE_64BIT;
-    heeprom->write.FloatData    = EEPROM_WRITE_FloatData;
-    heeprom->write.DoubleData   = EEPROM_WRITE_DoubleData;
-
-    /** Allocate Read Functions **/
-    heeprom->read.D8BIT        = EEPROM_READ_8BIT;
-    heeprom->read.D16BIT       = EEPROM_READ_16BIT;
-    heeprom->read.D32BIT       = EEPROM_READ_32BIT;
-    heeprom->read.D64BIT       = EEPROM_READ_64BIT;
-    heeprom->read.FloatData    = EEPROM_READ_FloatData;
-    heeprom->read.DoubleData   = EEPROM_READ_DoubleData;
+    /** Allocate Functions **/
+    heeprom->WriteData  = EEPROM_WriteData;
+    heeprom->ReadData   = EEPROM_ReadData;
 
 }
 
 void EEPROM_DeInit(EEPROM_t *heeprom)
 {
 
-    /** Deallocate Write Functions **/
-    heeprom->write.D8BIT        = NULL;
-    heeprom->write.D16BIT       = NULL;
-    heeprom->write.D32BIT       = NULL;
-    heeprom->write.D64BIT       = NULL;
-    heeprom->write.FloatData    = NULL;
-    heeprom->write.DoubleData   = NULL;
-
-    /** Deallocate Read Functions **/
-    heeprom->read.D8BIT        = NULL;
-    heeprom->read.D16BIT       = NULL;
-    heeprom->read.D32BIT       = NULL;
-    heeprom->read.D64BIT       = NULL;
-    heeprom->read.FloatData    = NULL;
-    heeprom->read.DoubleData   = NULL;
+    /** Deallocate Functions **/
+    heeprom->WriteData  = NULL;
+    heeprom->ReadData   = NULL;
 
 }
 
@@ -104,7 +81,7 @@ void EEPROM_DeInit(EEPROM_t *heeprom)
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t data)
+void WRITE_8BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data)
 {
 
     /** Set Memory Address according with selected memory block **/
@@ -119,7 +96,7 @@ void EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
     }
 
     /** Write data to a specified address **/
-    HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &data, 1, 100);
+    DRV_I2C1_Mem_WriteByte(MemAddr, addr, data);
 
 }
 
@@ -129,15 +106,15 @@ void EEPROM_WRITE_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint16_t data)
+void WRITE_16BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint16_t *data)
 {
 
     /** Local Variables **/
     uint8_t TransmitBuffer[2] = { 0x00 , 0x00 };
 
     /** Store data to buffer **/
-    TransmitBuffer[0] = (uint8_t)(data >> 8);
-    TransmitBuffer[1] = (uint8_t)data;
+    TransmitBuffer[0] = (uint8_t)((*data) >> 8);
+    TransmitBuffer[1] = (uint8_t)(*data);
 
     /** Set Memory Address according with selected memory block **/
     switch(AddrBlock)
@@ -151,11 +128,11 @@ void EEPROM_WRITE_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
     }
 
     /** Write first byte data to a specified address **/
-    HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[0], 1, 100);
+    DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[0]);
 
     /** Write second byte to next address **/
     addr += 1;
-    HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[1], 1, 100);
+    DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[1]);
 
 }
 
@@ -165,7 +142,7 @@ void EEPROM_WRITE_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t data)
+void WRITE_32BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t *data)
 {
 
     /** Local Variables **/
@@ -175,11 +152,11 @@ void EEPROM_WRITE_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
     /** Stora Data to buffer **/
     for(itr = 0; itr < 4; itr++)
     {
-        TransmitBuffer[itr] = (uint8_t)(data >> Bits2Move);
+        TransmitBuffer[itr] = (uint8_t)((*data) >> Bits2Move);
         Bits2Move -= 8;
         if(Bits2Move == 0 )
         {
-            TransmitBuffer[itr] = (uint8_t)(data);
+            TransmitBuffer[itr] = (uint8_t)(*data);
         }
     }
 
@@ -198,7 +175,7 @@ void EEPROM_WRITE_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
     for(int itr = 0; itr < 4; itr++)
     {
         /** Transmit data to EEPROM **/
-        HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[itr]);
         addr++;
     }
 
@@ -210,7 +187,7 @@ void EEPROM_WRITE_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint64_t data)
+void WRITE_64BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint64_t *data)
 {
 
     /** Local Variables **/
@@ -220,11 +197,11 @@ void EEPROM_WRITE_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
     /** Stora Data to buffer **/
     for(itr = 0; itr < 8; itr++)
     {
-        TransmitBuffer[itr] = (uint8_t)(data >> Bits2Move);
+        TransmitBuffer[itr] = (uint8_t)((*data) >> Bits2Move);
         Bits2Move -= 8;
         if(Bits2Move == 0 )
         {
-            TransmitBuffer[itr] = (uint8_t)(data);
+            TransmitBuffer[itr] = (uint8_t)(*data);
         }
     }
 
@@ -243,7 +220,7 @@ void EEPROM_WRITE_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
     for(itr = 0; itr < 8; itr++)
     {
         /** Transmit data to EEPROM **/
-        HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[itr]);
         addr++;
     }
 
@@ -255,11 +232,11 @@ void EEPROM_WRITE_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float data)
+void WRITE_FLOAT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data)
 {
 
     /** Local Variables **/
-    uint32_t    tempData = (uint32_t)data;
+    uint32_t    tempData = (uint32_t)(*data);
     uint8_t     TransmitBuffer[4] = { 0x00, 0x00, 0x00, 0x00 };
     int itr = 0, Bits2Move = (32 - 8);
 
@@ -290,7 +267,7 @@ void EEPROM_WRITE_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, 
     for(int itr = 0; itr < 4; itr++)
     {
         /** Transmit data to EEPROM **/
-        HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[itr]);
         addr++;
     }
 
@@ -302,11 +279,11 @@ void EEPROM_WRITE_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, 
  * @values:
  * @return:
  **/
-void EEPROM_WRITE_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double data)
+void WRITE_DOUBLE(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data)
 {
 
     /** Local Variables **/
-    uint64_t    tempData = (uint64_t)data;
+    uint64_t    tempData = (uint64_t)(*data);
     uint8_t     TransmitBuffer[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     int itr = 0, Bits2Move = (64 - 8);
 
@@ -335,10 +312,42 @@ void EEPROM_WRITE_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock,
     for(itr = 0; itr < 8; itr++)
     {
         /** Transmit data to EEPROM **/
-        HAL_I2C_Mem_Write(hi2c, MemAddr, addr, 1, &TransmitBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_WriteByte(MemAddr, addr, &TransmitBuffer[itr]);
         addr++;
     }
 
+}
+
+static void EEPROM_WriteData( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType )
+{
+
+    switch (DataType)
+    {
+
+        case D_UINT8:
+            WRITE_8BIT(AddrBlock, addr, (uint8_t *)pData);
+            break;
+
+        case D_UINT16:
+            WRITE_16BIT(AddrBlock, addr, (uint16_t *)pData);
+            break;
+
+        case D_UINT32:
+            WRITE_32BIT(AddrBlock, addr, (uint32_t *)pData);
+            break;
+
+        case D_UINT64:
+            WRITE_64BIT(AddrBlock, addr, (uint64_t *)pData);
+            break;
+
+        case D_FLOAT:
+            WRITE_FLOAT(AddrBlock, addr, (float *)pData);
+            break;
+
+        case D_DOUBLE:
+            WRITE_DOUBLE(AddrBlock, addr, (double *)pData);
+            break;
+    }
 }
 
 /****************************************************************
@@ -351,7 +360,7 @@ void EEPROM_WRITE_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock,
  * @values:
  * @return:
  **/
-void EEPROM_READ_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data)
+void READ_8BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data)
 {
 
     /** Set Memory Address according with selected memory block **/
@@ -366,7 +375,7 @@ void EEPROM_READ_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_
     }
 
     /** Read Data from EEPROM **/
-    HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, data, 1, 100);
+    DRV_I2C1_Mem_ReadByte(MemAddr, addr, data);
 
 }
 
@@ -376,7 +385,7 @@ void EEPROM_READ_8BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_
  * @values:
  * @return:
  **/
-void EEPROM_READ_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint16_t *data)
+void READ_16BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint16_t *data)
 {
 
     /** Local Vriables **/
@@ -395,11 +404,11 @@ void EEPROM_READ_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
     }
 
     /** Read first data from EEPROM **/
-    HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[0], 1, 100);
+    DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[0]);
 
     /** Read second data from EEPROM **/
     addr += 1;
-    HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[1], 1, 100);
+    DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[1]);
 
     /** Store received buffer data **/
     (*data) = (ReceiveBuffer[0] << 8) + ReceiveBuffer[1];
@@ -412,7 +421,7 @@ void EEPROM_READ_16BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
  * @values:
  * @return:
  **/
-void EEPROM_READ_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t *data)
+void READ_32BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t *data)
 {
 
     /** Local Variables **/
@@ -433,7 +442,7 @@ void EEPROM_READ_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
     /** Read data from EEPROM **/
     for(int itr = 0; itr < 4; itr++)
     {
-        HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[itr]);
         addr++;
     }
 
@@ -454,7 +463,7 @@ void EEPROM_READ_32BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
  * @values:
  * @return:
  **/
-void EEPROM_READ_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint64_t *data)
+void READ_64BIT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint64_t *data)
 {
 
     /** Local Variables **/
@@ -475,7 +484,7 @@ void EEPROM_READ_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
     /** Read data from EEPROM **/
     for(int itr = 0; itr < 8; itr++)
     {
-        HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[itr]);
         addr++;
     }
 
@@ -496,7 +505,7 @@ void EEPROM_READ_64BIT(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8
  * @values:
  * @return:
  **/
-void EEPROM_READ_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data)
+void READ_FLOAT(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data)
 {
     
     /** Local Variables **/
@@ -518,7 +527,7 @@ void EEPROM_READ_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, u
     /** Read data from EEPROM **/
     for(int itr = 0; itr < 4; itr++)
     {
-        HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[itr]);
         addr++;
     }
 
@@ -542,7 +551,7 @@ void EEPROM_READ_FloatData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, u
  * @values:
  * @return:
  **/
-void EEPROM_READ_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data)
+void READ_DOUBLE(MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data)
 {
 
     /** Local Variables **/
@@ -564,7 +573,7 @@ void EEPROM_READ_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, 
     /** Read data from EEPROM **/
     for(int itr = 0; itr < 8; itr++)
     {
-        HAL_I2C_Mem_Read(hi2c, MemAddr, addr, 1, &ReceiveBuffer[itr], 1, 100);
+        DRV_I2C1_Mem_ReadByte(MemAddr, addr, &ReceiveBuffer[itr]);
         addr++;
     }
 
@@ -579,4 +588,40 @@ void EEPROM_READ_DoubleData(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, 
 
     (*data) = (double)tempValue;
 
+}
+
+/**
+ * @Name;
+ * @brief:
+ * @values:
+ * @return:
+ **/
+static void EEPROM_ReadData( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType )
+{
+    switch (DataType)
+    {
+        case D_UINT8:
+            READ_8BIT(AddrBlock, addr, (uint8_t *)pData);
+            break;
+
+        case D_UINT16:
+            READ_16BIT(AddrBlock, addr, (uint16_t *)pData);
+            break;
+
+        case D_UINT32:
+            READ_32BIT(AddrBlock, addr, (uint32_t *)pData);
+            break;
+
+        case D_UINT64:
+            READ_64BIT(AddrBlock, addr, (uint64_t *)pData);
+            break;
+
+        case D_FLOAT:
+            READ_FLOAT(AddrBlock, addr, (float *)pData);
+            break;
+
+        case D_DOUBLE:
+            READ_DOUBLE(AddrBlock, addr, (double *)pData);
+            break;
+    }
 }

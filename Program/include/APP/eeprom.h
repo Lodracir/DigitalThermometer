@@ -19,41 +19,17 @@
      MEM_BLOCK_1
  }MEM_BLOCKADDR_t;
 
-/**
- * Write Data to EEPROM
- **/
-typedef struct
+typedef enum
 {
 
-    /** Unsigned Data **/
-    void    (*D8BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t data);
-    void    (*D16BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint16_t data);
-    void    (*D32BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint32_t data);
-    void    (*D64BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint64_t data);
+    D_UINT8 = 0,
+    D_UINT16,
+    D_UINT32,
+    D_UINT64,
+    D_FLOAT,
+    D_DOUBLE
 
-    /** Float and Double Data **/
-    void    (*FloatData)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float data);
-    void    (*DoubleData)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double data);
-
-}EEPROM_Write_t;
-
-/**
- * Read Data to EEPROM
- **/
-typedef struct
-{
-
-    /** Unsigned Data **/
-    void    (*D8BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, uint8_t *data);
-    void    (*D16BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint16_t *data);
-    void    (*D32BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint32_t *data);
-    void    (*D64BIT)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr,uint64_t *data);
-
-    /** Float and Double Data **/
-    void    (*FloatData)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, float *data);
-    void    (*DoubleData)(I2C_HandleTypeDef *hi2c, MEM_BLOCKADDR_t AddrBlock, uint8_t addr, double *data);
-
-}EEPROM_Read_t;
+}Data_Type_t;
 
 /**
  * EEPROM Functions Structure
@@ -61,12 +37,14 @@ typedef struct
 typedef struct
 {
 
-    EEPROM_Write_t  write;
-    EEPROM_Read_t   read;
+    void    (*WriteData)( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType );
+    void    (*ReadData)( MEM_BLOCKADDR_t AddrBlock, uint8_t addr, void* pData, Data_Type_t DataType );
 
 }EEPROM_t;
 
-/** Prototype Functions **/
+/** 
+ * Prototype Functions 
+ **/
 void EEPROM_Init(EEPROM_t *heeprom);
 void EEPROM_DeInit(EEPROM_t *heeprom);
 

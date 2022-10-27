@@ -34,6 +34,12 @@
 #define HDC2010_TRIGGONDEMAND	0x00
 
 /**
+ * 
+ **/
+
+
+
+/**
  * HDC2010 Device Information Structure
  **/
 typedef struct
@@ -67,10 +73,10 @@ typedef struct
  **/
 typedef struct
 {
-    void        (*readInfo)(I2C_HandleTypeDef *hi2c, HDC2010_DeviceInfo_t *dev);
-    void        (*pollMeasurement)(I2C_HandleTypeDef *hi2c);
-    uint16_t    (*getTemperature)(I2C_HandleTypeDef *hi2c, float *value);
-    uint16_t    (*getHumidity)(I2C_HandleTypeDef *hi2c, float *value);
+    void        (*readInfo)( HDC2010_DeviceInfo_t *dev );
+    void        (*pollMeasurement)( void );
+    uint16_t    (*getTemperature)( float *value );
+    uint16_t    (*getHumidity)( float *value );
 
 }HDC2010_t;
 

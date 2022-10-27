@@ -12,5 +12,6 @@
 
 /** Prototype Functions **/
 void DRV_TIM2_Init(void);
+void DRV_TIM2_Start_IT(void);
 
 #endif //PROGRAM_DRV_TIM2_H

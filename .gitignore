@@ -1,5 +1,4 @@
 # Folders to be ignored
 /PCB/EEPROM_MikroBus/EEPROM_GerberFiles
 /PCB/EEPROM_MikroBus/EEPROM_MikroBus-backups
-/Program/ .vscode/
-
+/Program/.vscode

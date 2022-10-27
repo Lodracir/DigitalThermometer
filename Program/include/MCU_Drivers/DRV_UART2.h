@@ -18,7 +18,7 @@ typedef struct
 }DRV_Serial_t;
 
 /*  */
-DRV_Serial_t Serial;
+extern DRV_Serial_t Serial;
 
 /* Prototype Functions */
 void DRV_UART2_Init(void);

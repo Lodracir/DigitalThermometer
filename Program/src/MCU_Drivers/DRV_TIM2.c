@@ -35,6 +35,7 @@ void DRV_TIM2_Init(void)
     HAL_TIM_Base_Init(&htim2);
 
     /** Configure TIM2 Interrupt **/
+    // DRV_NVIC_Init( TIM2_IRQn, PRIORITY_0, SUB_PRIORITY_0 );
     HAL_NVIC_SetPriority( TIM2_IRQn, 0, 0 );
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
 
@@ -43,6 +44,17 @@ void DRV_TIM2_Init(void)
 /****************************************************************
  *                                                              *
  *                          Functions                           *
+ *                                                              *
+ ****************************************************************/
+
+void DRV_TIM2_Start_IT(void)
+{
+    HAL_TIM_Base_Start_IT(&htim2);
+}
+
+/****************************************************************
+ *                                                              *
+ *                        ISR Functions                         *
  *                                                              *
  ****************************************************************/
 
