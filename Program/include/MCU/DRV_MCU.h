@@ -11,14 +11,10 @@
 #include <string.h>
 
 /* Include MCU Drivers */
-#include "MCU_Drivers/DRV_GPIO.h"
-#include "MCU_Drivers/DRV_I2C1.h"
-#include "MCU_Drivers/DRV_TIM2.h"
-
-/**
- * New Drivers Headers
- **/
-#include "MCU_Drivers/DRV_UART.h"
+#include "DRV_GPIO.h"
+#include "DRV_I2C1.h"
+#include "DRV_TIM2.h"
+#include "DRV_UART.h"
 
 /* Prototype Functions */
 void MCU_DRV_Init(void);

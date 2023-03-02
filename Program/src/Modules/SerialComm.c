@@ -1,86 +1,167 @@
 /****************************************************************
- *                   Required Headers                           *
+ *                                                              *
+ *                     Required Includes                        *
+ *                                                              *
  ****************************************************************/
+
+//Modules
 #include "Modules/SerialComm.h"
 
 /****************************************************************
- *                   Global Variables                           *
+ *                                                              *
+ *                  Static Typedef struct                       *
+ *                                                              *
  ****************************************************************/
-Uart_t huart2;
-Serial_t Serial;
+
+typedef struct 
+{
+    //Flags
+    bool    Init;
+
+    //UART Configuration Structure
+    Uart_t  Uart;
+
+}Serial_t;
+
+typedef struct 
+{
+    uint8_t TX[SERIAL_UART_TX_BUFFER_SIZE];
+    uint8_t RX[SERIAL_UART_RX_BUFFER_SIZE];
+
+}SerialBuffer_t;
+
 
 /****************************************************************
- *                   Static Variables                           *
+ *                                                              *
+ *                     Local Variables                          *
+ *                                                              *
  ****************************************************************/
+
+//Serial Buffers
+static SerialBuffer_t SerialBuffer = {
+    .TX = {0},
+    .RX = {0}
+};
+
+//Char
 static uint8_t LnChar = '\n';
 static uint8_t CrChar = '\r';
 
-/****************************************************************
- *               Static Prototype Functions                     *
- ****************************************************************/
- static void Serial_Print( const char *pString );
- static void Serial_PrintLn( const char *pString );
- static void Serial_Transmit( uint8_t *pData, uint16_t Size );
- static void Serial_Receive( uint8_t *pData, uint16_t Size );
+//Serial Structure
+static Serial_t Serial = {
+    //Flags
+    .Init = false,
+
+};
 
 /****************************************************************
+*                                                               *
 *                     Public Functions                          *
+*                                                               *
 ****************************************************************/
 
-/**
- *
- * @param Uart
- * @param UartConfig
- * @return
- **/
-void SerialComm_Init(void)
+Serial_err_t SerialComm_Init(SerialConfig_t *Config)
 {
-    Serial.Print    = Serial_Print;
-    Serial.PrintLn  = Serial_PrintLn;
-    Serial.Transmit = Serial_Transmit;
-    Serial.Receive  = Serial_Receive;
-}
+    //Local variables
+    UartConfig_t UartConfig;
 
-/**
- *
- * @param Uart
- * @param UartConfig
- * @return
- **/
-void SerialComm_DeInit(void)
-{
-    Serial.Print    = NULL;
-    Serial.PrintLn  = NULL;
-    Serial.Transmit = NULL;
-    Serial.Receive  = NULL;
-}
-
-/****************************************************************
- *                      Static Functions                        *
- ****************************************************************/
-
-static void Serial_Print( const char *pString )
-{
-    while( (*pString) != '\0' )
+    if(Serial.Init == true)
     {
-        DRV_UART_Transmit( &huart2, (uint8_t *)pString, 1 );
-        pString++;
+        return SERIAL_ERROR_ALREADY_INIT;
     }
+    else
+    {
+        //Configure UART
+        UartConfig.SerialPort = Config->Instance;
+        UartConfig.Baudrate   = Config->Baudrate;
+
+        //Configure default values
+        UartConfig.Mode         = UART_MODE_TX_RX;
+        UartConfig.StopBits     = UART_STOPBITS_1;
+        UartConfig.Parity       = UART_PARITY_NONE;
+        UartConfig.HwFlowCtl    = UART_HWCONTROL_NONE;
+        UartConfig.Oversampling = UART_OVERSAMPLING_16;
+        UartConfig.ISR.Enable   = UART_ISR_DISABLE;
+        UartConfig.TimeOut      = 1000;
+
+        //Configure Buffer TODO: UNDER DEVELOPMENT
+       
+
+        //Configure UART
+        if( DRV_UART_Init(&Serial.Uart, &UartConfig) != UART_OK )
+        {
+            return SERIAL_ERROR_UART;
+        }
+    }
+
+    Serial.Init = true;
+    return SERIAL_ERROR_NO;
 }
 
-static void Serial_PrintLn( const char *pString )
+Serial_err_t SerialComm_DeInit(void)
 {
-    Serial_Print( pString );
-    DRV_UART_Transmit( &huart2, &CrChar, 1 );
-    DRV_UART_Transmit( &huart2, &LnChar, 1 );
+    if(Serial.Init == false)
+    {
+        return SERIAL_ERROR_ALREADY_INIT;
+    }
+    else
+    {
+        //Disable UART
+        if( DRV_UART_DeInit(&Serial.Uart) != UART_OK )
+        {
+            return SERIAL_ERROR_UART;
+        }
+    }
+
+    Serial.Init = false;
+    return SERIAL_ERROR_NO;
 }
 
-static void Serial_Transmit( uint8_t *pData, uint16_t Size )
+Serial_err_t SerialComm_Print( const char *pString )
 {
-    DRV_UART_Transmit( &huart2, pData, Size );
+    if( Serial.Init == false )
+    {
+        return SERIAL_ERROR_NO_INIT;
+    }
+    else
+    {
+        while( (*pString) != '\0' )
+        {
+            DRV_UART_Transmit( &Serial.Uart, (uint8_t *)pString, 1 );
+            pString++;
+        }
+
+        DRV_UART_Transmit( &Serial.Uart, &CrChar, 1 );
+        DRV_UART_Transmit( &Serial.Uart, &LnChar, 1 );
+    }
+
+    return SERIAL_ERROR_NO;
 }
 
-static void Serial_Receive( uint8_t *pData, uint16_t Size )
+Serial_err_t SerialComm_Transmit(uint8_t *pData, uint16_t Size)
 {
-    DRV_UART_Receive( &huart2, pData, Size );
+    if( Serial.Init == false )
+    {
+        return SERIAL_ERROR_NO_INIT;
+    }
+    else
+    {
+        DRV_UART_Transmit( &Serial.Uart, pData, Size );
+    }
+
+    return SERIAL_ERROR_NO;
+}
+
+Serial_err_t SerialComm_Receive(uint8_t *pData, uint16_t Size)
+{
+    if( Serial.Init == false )
+    {
+        return SERIAL_ERROR_NO_INIT;
+    }
+    else
+    {
+        DRV_UART_Receive( &Serial.Uart, pData, Size );
+    }
+
+    return SERIAL_ERROR_NO;
 }

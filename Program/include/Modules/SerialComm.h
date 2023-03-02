@@ -8,29 +8,59 @@
 /****************************************************************
  *                   Required Headers                           *
  ****************************************************************/
-#include "MCU_Drivers/DRV_UART.h"
+
+//ANSI C
+#include <stdio.h>
+#include <stdbool.h>
+
+//MCU 
+#include "MCU/DRV_UART.h"
+
+/****************************************************************
+ *                          Defines                             *
+ ****************************************************************/
+
+#define SERIAL_UART_TX_BUFFER_SIZE  512  
+#define SERIAL_UART_RX_BUFFER_SIZE  512
+
+#define SERIAL_COMM_BAUDRATE 115200
+
+/****************************************************************
+ *                   Typedef enumeration                        *
+ ****************************************************************/
+
+typedef enum
+{
+    SERIAL_ERROR_NO = 0,
+    SERIAL_ERROR_NO_INIT,
+    SERIAL_ERROR_ALREADY_INIT,
+    SERIAL_ERROR_UART,
+
+    SERIAL_ERROR_TOTAL
+}Serial_err_t;
 
 /****************************************************************
  *                   Typedef structures                         *
  ****************************************************************/
 
-typedef struct
+typedef struct 
 {
-    void    (*Print)( const char *pString );
-    void    (*PrintLn)( const char *pString );
-    void    (*Transmit)( uint8_t *pData, uint16_t Size );
-    void    (*Receive)( uint8_t *pData, uint16_t Size );
-}Serial_t;
+    USART_TypeDef   *Instance;
+    uint32_t        Baudrate;
+
+}SerialConfig_t;
 
 /****************************************************************
  *                   Prototype Functions                        *
  ****************************************************************/
-void SerialComm_Init(void);
-void SerialComm_DeInit(void);
 
-/****************************************************************
- *                   Typedef structures                         *
- ****************************************************************/
-extern Serial_t Serial;
+//New Functions
+Serial_err_t SerialComm_Init(SerialConfig_t *Config);
+Serial_err_t SerialComm_DeInit(void);
+
+Serial_err_t SerialComm_Print( const char *pString );
+
+Serial_err_t SerialComm_Transmit(uint8_t *pData, uint16_t Size);
+Serial_err_t SerialComm_Receive(uint8_t *pData, uint16_t Size);
 
 #endif //PROGRAM_SERIALCOMM_H

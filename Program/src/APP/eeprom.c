@@ -1,6 +1,6 @@
 /* EEPROM Driver Header */
 #include "APP/eeprom.h"
-#include "MCU_Drivers/DRV_I2C1.h"
+#include "MCU/DRV_I2C1.h"
 
 /**
  *  Local Variables

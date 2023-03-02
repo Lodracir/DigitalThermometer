@@ -1,6 +1,6 @@
 /** HDC2010 Driver Include **/
 #include "APP/HDC2010.h"
-#include "MCU_Drivers/DRV_I2C1.h"
+#include "MCU/DRV_I2C1.h"
 
 /** Conversion Factor Variables **/
 const float temp_value = 165.00000f / 65536.00000f;

@@ -8,8 +8,8 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "c:/Users/resca/Documents/IndoorSensor/DigitalThermometer/Program/include",
-                "c:/Users/resca/Documents/IndoorSensor/DigitalThermometer/Program/src",
+                "c:/Users/resca/Documents/Proyectos/DigitalThermometer/Program/include",
+                "c:/Users/resca/Documents/Proyectos/DigitalThermometer/Program/src",
                 "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/CMSIS/Include",
                 "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/CMSIS/Device/ST/STM32F3xx/Include",
                 "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/STM32F3xx_HAL_Driver/Inc",
@@ -55,8 +55,8 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Users/resca/Documents/IndoorSensor/DigitalThermometer/Program/include",
-                    "c:/Users/resca/Documents/IndoorSensor/DigitalThermometer/Program/src",
+                    "c:/Users/resca/Documents/Proyectos/DigitalThermometer/Program/include",
+                    "c:/Users/resca/Documents/Proyectos/DigitalThermometer/Program/src",
                     "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/CMSIS/Include",
                     "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/CMSIS/Device/ST/STM32F3xx/Include",
                     "C:/Users/resca/.platformio/packages/framework-stm32cubef3/Drivers/STM32F3xx_HAL_Driver/Inc",
@@ -101,7 +101,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60104",
+                "PLATFORMIO=60105",
                 "STM32F303x8",
                 "USE_HAL_DRIVER",
                 "F_CPU=72000000L",

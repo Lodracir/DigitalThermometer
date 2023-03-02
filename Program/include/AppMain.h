@@ -2,11 +2,27 @@
 #define PROGRAM_APPMAIN_H
 
 /****************************************************************
- *                   Required Headers                           *
+ *                                                              *
+ *                     Required Includes                        *
+ *                                                              *
  ****************************************************************/
+
+//STM32 HAL
 #include "stm32f3xx_hal.h"
-#include "MCU_Drivers/DRV_MCU.h"
+
+//MCU
+#include "MCU/DRV_MCU.h"
+
+//Modules
 #include "Modules/SerialComm.h"
+
+/****************************************************************
+ *                                                              *
+ *                          Defines                             *
+ *                                                              *
+ ****************************************************************/
+
+#define DIGITAL_TERMOMETER_VERSION  "0.1.0a"
 
 /****************************************************************
  *                   Prototype Functions                        *

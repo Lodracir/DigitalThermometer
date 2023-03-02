@@ -1,5 +1,5 @@
 /** TIM2 Driver Include **/
-#include "MCU_Drivers/DRV_TIM2.h"
+#include "MCU/DRV_TIM2.h"
 #include "APP/APP_STATE_MACHINE.h"
 #include <stdbool.h>
 
@@ -60,15 +60,5 @@ void DRV_TIM2_Start_IT(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-
-    //GPIOB->ODR ^= (1U << 3);
-    count++;
-
-    if( (count == 60) )
-    {
-        APPStateMachine = START_MEASUREMENT;
-        count = 0;
-    }
-
 
 }

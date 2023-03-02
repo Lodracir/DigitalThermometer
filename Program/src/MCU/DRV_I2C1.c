@@ -1,5 +1,5 @@
 /* I2C1 Driver Include */
-#include "MCU_Drivers/DRV_I2C1.h"
+#include "MCU/DRV_I2C1.h"
 
 /* I2C1 Handle structure */
 I2C_HandleTypeDef hi2c1;

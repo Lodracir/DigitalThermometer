@@ -1,5 +1,5 @@
 /** GPIO Header Driver **/
-#include "MCU_Drivers/DRV_GPIO.h"
+#include "MCU/DRV_GPIO.h"
 
 /****************************************************************
  *                                                              *
@@ -48,10 +48,8 @@ void DRV_GPIO_Init(void)
 
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
-
     if( huart->Instance == USART2 )
     {
-
         /** GPIO Init Structure **/
         GPIO_InitTypeDef hgpio_uart2;
 
@@ -67,12 +65,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
         HAL_GPIO_Init(GPIOA, &hgpio_uart2);
 
     }
-
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
 {
-
     if( huart->Instance == USART2 )
     {
         /** Disable UART2 Clock **/
@@ -81,7 +77,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
         /** GPIO DeInit **/
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2 | GPIO_PIN_15);
     }
-
 }
 
 /********************** I2C1 Msp Functions **********************/
@@ -91,7 +86,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 
     if( hi2c->Instance == I2C1 )
     {
-
         /** GPIO Init Structure **/
         GPIO_InitTypeDef hgpio_i2c1;
 
@@ -105,14 +99,11 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
         hgpio_i2c1.Speed        = GPIO_SPEED_FREQ_HIGH;
         hgpio_i2c1.Alternate    = GPIO_AF4_I2C1;
         HAL_GPIO_Init(GPIOB, &hgpio_i2c1);
-
     }
-
 }
 
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
 {
-
     if(hi2c->Instance == I2C1)
     {
         /** Disable I2C1 Clock **/
@@ -121,39 +112,30 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
         /** GPIO DeInit **/
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6 | GPIO_PIN_7);
     }
-
 }
 
 /********************** SPI1 Msp Functions *********************/
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 {
-
     if( hspi->Instance  == SPI1 )
     {
-
         /** GPIO Init Structure **/
         //GPIO_InitTypeDef hgpio_spi1;
 
         /** Enable SPI1 Clock **/
         __HAL_RCC_SPI1_CLK_ENABLE();
-
     }
 
 }
 
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
 {
-
     if( hspi->Instance == SPI1 )
     {
-
         /** Disable SPI1 Clock **/
         __HAL_RCC_I2C1_CLK_DISABLE();
 
         /** Disable GPIO Pins related to SPI1 **/
-
-
     }
-
 }
