@@ -22,4 +22,11 @@
 #include "APP/HDC2010.h"
 #include "APP/eeprom.h"
 
+#include "AppMain.h"
+
+/** Modules Include **/
+#include "Modules/SerialComm.h"
+
+
+
 #endif //PROGRAM_MAIN_H

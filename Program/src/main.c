@@ -14,9 +14,7 @@ typedef struct
 /** **/
 typedef struct 
 {
-    
     EE_Flags_t  Stored;
-
 }Flags_t;
 
 
@@ -29,6 +27,8 @@ extern volatile bool MeasureFLAG;
 
 /** Global Variables **/
 const char welcomeTxt[10] = "Welcome!\r\n";
+char msg[20];
+uint8_t MsgSize = 0x00;
 float TempBuff[5], HumBuff[5];
 uint16_t TempBuffBits[5], HumBuffBits[5];
 char devID[20], devMnfr[20], TempTXT[11], HumTXT[10];
@@ -66,11 +66,11 @@ int main()
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
 
     /** Init App Drivers **/
+    AppInit();
     APPInit();
-    
 
     /** Transmit Initial Message **/
-    Serial.Transmit((uint8_t *)welcomeTxt, sizeof(welcomeTxt));
+    Serial.PrintLn("Digital Thermometer Program V0.1b");
 
     /** **/
     //APP_CheckStoredSensorInfo_Flag(&Flag.Stored.SensorInfo);
@@ -98,15 +98,15 @@ int main()
     }
     
     /**************** Print Device Info through UART ****************/
-    sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
-    sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
+    MsgSize = sprintf(devMnfr, "Mnfr ID: 0x%04X\r\n", SensorInfo.Manufacturer);
+    Serial.Transmit( (uint8_t *)devMnfr, MsgSize );
 
-    Serial.Transmit( (uint8_t *)devMnfr, sizeof(devMnfr));
-    Serial.Transmit( (uint8_t *)devID, sizeof(devID) );
+    MsgSize = sprintf(devID, "Dev ID: 0x%04X\r\n", SensorInfo.Device);
+    Serial.Transmit( (uint8_t *)devID, MsgSize );
     /****************************************************************/
 
     /*************************** Init TIM2 **************************/
-    DRV_TIM2_Start_IT();
+    DRV_TIM2_Start_IT(); //TODO: Will be relocated
     /****************************************************************/
 
     while(1)
@@ -148,8 +148,8 @@ void APP_START_MEASUREMENT(void)
     sprintf(TempTXT, "T: %i C\r\n", (int)Temperature.value);
     sprintf(HumTXT, "H: %i RH\r\n", (int)Humidity.value);
 
-    Serial.Transmit( (uint8_t *)TempTXT, sizeof(devMnfr));
-    Serial.Transmit( (uint8_t *)HumTXT, sizeof(devID) );
+    //Serial.Transmit( (uint8_t *)TempTXT, sizeof(devMnfr));
+    //Serial.Transmit( (uint8_t *)HumTXT, sizeof(devID) );
 
 }
 
